@@ -1,0 +1,199 @@
+package com.blog.app.project.blogappapi.controller;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.StreamUtils;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.blog.app.project.blogappapi.dto.PostDto;
+import com.blog.app.project.blogappapi.dto.UserDto;
+import com.blog.app.project.blogappapi.entity.Post;
+import com.blog.app.project.blogappapi.payload.ApiResponse;
+import com.blog.app.project.blogappapi.payload.AppConstantsPost;
+import com.blog.app.project.blogappapi.payload.PostResponse;
+import com.blog.app.project.blogappapi.service.FileService;
+import com.blog.app.project.blogappapi.service.PostService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+
+@RestController
+@RequestMapping("/api/")
+public class PostController {
+
+    @Autowired
+    private PostService postService;
+
+    @Value("${project.image}")
+    private String path;
+
+    @Autowired
+    private FileService fileService;
+
+    @Operation(summary = "Create Post")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Post created successfully",
+                    content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Post.class)) }),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid user id or category id supplied",
+                    content = @Content),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User id or category id not found",
+                    content = @Content) })
+    @PostMapping(value = "/user/{userId}/category/{categoryId}/posts",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PostDto> createPost(
+            @Valid @RequestBody PostDto postDto,
+            @PathVariable Integer userId,
+            @PathVariable Integer categoryId) {
+        PostDto post = postService.createPost(postDto, userId, categoryId);
+        return new ResponseEntity<PostDto>(post, HttpStatus.CREATED);
+    }
+
+    @Operation(summary = "Get Posts By User")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Found the posts",
+                    content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Post.class)) }),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid userId supplied",
+                    content = @Content),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Post not found",
+                    content = @Content) })
+    @GetMapping(value = "/user/{userId}/posts",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<PostDto>> getPostByUser(
+            @PathVariable Integer userId) {
+        List<PostDto> postsByUser = postService.getPostsByUser(userId);
+        return new ResponseEntity<List<PostDto>>(postsByUser, HttpStatus.OK);
+    }
+
+    @Operation(summary = "Get Posts By Category")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Found the posts",
+                    content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Post.class)) }),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid categoryId supplied",
+                    content = @Content),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Post not found",
+                    content = @Content) })
+    @GetMapping(value = "/category/{categoryId}/posts",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<PostDto>> getPostsByCategory(
+            @PathVariable Integer categoryId) {
+        List<PostDto> postsByCategory = postService.getPostsByCategory(categoryId);
+        return new ResponseEntity<List<PostDto>>(postsByCategory, HttpStatus.OK);
+    }
+
+    @Operation(summary = "Get Post By Its Id")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Found the post",
+                    content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Post.class)) }),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid id supplied",
+                    content = @Content),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Post not found",
+                    content = @Content) })
+    @GetMapping(value = "/posts/{postId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PostDto> getPost(@PathVariable Integer postId) {
+        PostDto postById = postService.getPostById(postId);
+        return new ResponseEntity<PostDto>(postById, HttpStatus.OK);
+    }
+
+    @Operation(summary = "Get All Posts")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Found the posts",
+                    content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Post.class)) }),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Posts not found",
+                    content = @Content) })
+    @GetMapping(value = "/posts/",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PostResponse> getAllPost(
+            @RequestParam(value = "pageNo", defaultValue = AppConstantsPost.PAGE_NO, required = false) Integer pageNo,
+            @RequestParam(value = "pageSize", defaultValue = AppConstantsPost.PAGE_SIZE, required = false) Integer pageSize,
+            @RequestParam(value = "sortBy", defaultValue = AppConstantsPost.SORT_BY, required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = AppConstantsPost.SORT_DIR, required = false) String sortDir
+    ) {
+        PostResponse allPost = postService.getAllPost(pageNo, pageSize, sortBy, sortDir);
+        return new ResponseEntity<PostResponse>(allPost, HttpStatus.OK);
+    }
+
+    @Operation(summary = "Delete Post By Its Id")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Post deleted",
+                    content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Post.class)) }),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid id supplied",
+                    content = @Content),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Post not found",
+                    content = @Content) })
+    @DeleteMapping(value = "/posts/{postId}" ,produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse> deletePost(@PathVariable Integer postId) {
+        postService.deletePost(postId);
+        return new ResponseEntity<ApiResponse>(new ApiResponse("Post Is Successfully Deleted", true), HttpStatus.OK);
+    }
+
+    @Operation(summary = "Update post By Its Id")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "post Updated Successfully",
+                    content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Post.class)) }),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid id supplied",
+                    content = @Content),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Post not found",
+                    content = @Content) })
+    @PutMapping(value = "/posts/{postId}",produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PostDto> updatePost(@RequestBody PostDto postDto, @PathVariable Integer postId) {
+        PostDto update = postService.updatePost(postDto, postId);
+        return new ResponseEntity<PostDto>(update, HttpStatus.OK);
+    }
+
+    @Operation(summary = "Search post By Its keyword")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Found post Successfully",
+                    content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Post.class)) }),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Post not found",
+                    content = @Content) })
+    @GetMapping(value = "/posts/search/{keyword}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<PostDto>> searchPosts(@PathVariable String keyword) {
+        List<PostDto> posts = postService.searchPosts(keyword);
+        return new ResponseEntity<List<PostDto>>(posts, HttpStatus.OK);
+    }
+
+    @Operation(summary = "File Upload")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "File uploaded successfully",
+                    content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Post.class)) }),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid post id supplied",
+                    content = @Content),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "post id not found",
+                    content = @Content) })
+    @PostMapping(value = "/post/image/upload/{postId}")
+    public ResponseEntity<PostDto> fileUpload(
+            @RequestParam("image") MultipartFile image,
+            @PathVariable Integer postId) throws IOException {
+
+        PostDto postDto = postService.getPostById(postId);
+        String fileName = fileService.uploadImage(path, image);
+        postDto.setImageName(fileName);
+        PostDto updatedPost = postService.updatePost(postDto, postId);
+
+        return new ResponseEntity<PostDto>(updatedPost, HttpStatus.OK);
+    }
+
+    
+    @GetMapping(value = "post/postId/{postId}")
+    public ResponseEntity<List<UserDto>> getUsersWhoCommented(@PathVariable int postId){
+    	List<UserDto> usersWhoCommented = postService.getUsersWhoCommented(postId);
+    	return new ResponseEntity<List<UserDto>>(usersWhoCommented, HttpStatus.OK);
+    	
+    }
+}
