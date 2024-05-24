@@ -125,7 +125,7 @@ public class CategoryControllerTest {
     }
 	
 	@Test
-	public void testcreateCategory() throws Exception{
+	public void testCreateCategory() throws Exception{
 		when(categoryRepository.save(category)).thenReturn(category);
 		
 		String content = objectWriter.writeValueAsString(category);  // convert java object into Json String 

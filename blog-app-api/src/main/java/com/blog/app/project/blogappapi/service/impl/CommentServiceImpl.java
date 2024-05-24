@@ -3,6 +3,10 @@ package com.blog.app.project.blogappapi.service.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.blog.app.project.blogappapi.dto.AddressDto;
+import com.blog.app.project.blogappapi.dto.UserDto;
+import com.blog.app.project.blogappapi.openfeignclient.AddressClient;
+import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +49,6 @@ public class CommentServiceImpl implements CommentService {
 		Post post = postRepository.findById(postId)
 				.orElseThrow(() -> new ResourceNotFoundException("post", "postId", postId));
 
-//        Comment comment = modelMapper.map(commentDto, Comment.class);
 		Comment comment = new Comment();
 		comment = Comment.builder().id(commentDto.getId()).content(commentDto.getContent()).build();
 		comment.setPost(post);

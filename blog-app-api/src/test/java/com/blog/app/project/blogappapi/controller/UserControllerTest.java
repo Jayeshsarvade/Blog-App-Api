@@ -1,199 +1,207 @@
 package com.blog.app.project.blogappapi.controller;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
+
+import com.blog.app.project.blogappapi.dto.AddressDto;
+import com.blog.app.project.blogappapi.dto.UserDto;
+import com.blog.app.project.blogappapi.payload.UserResponse;
+import com.blog.app.project.blogappapi.service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.aot.DisabledInAotMode;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import com.blog.app.project.blogappapi.entity.Category;
-import com.blog.app.project.blogappapi.entity.Comment;
-import com.blog.app.project.blogappapi.entity.Post;
-import com.blog.app.project.blogappapi.entity.User;
-import com.blog.app.project.blogappapi.repository.UserRepository;
-import com.blog.app.project.blogappapi.service.UserService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-
-@ExtendWith(MockitoExtension.class)
-@WebMvcTest(UserController.class)
-@AutoConfigureMockMvc
-public class UserControllerTest {
-
-    ObjectMapper objectMapper = new ObjectMapper();
-    ObjectWriter objectWriter = objectMapper.writer();
-
+@ContextConfiguration(classes = {UserController.class})
+@ExtendWith(SpringExtension.class)
+@DisabledInAotMode
+class UserControllerTest {
     @Autowired
-    private MockMvc mockMvc;
+    private UserController userController;
 
     @MockBean
     private UserService userService;
 
-    @InjectMocks
-    private UserController userController;
+    /**
+     * Method under test: {@link UserController#createUser(UserDto)}
+     */
 
-    @MockBean
-    private UserRepository userRepository;
-
-    private User user1;
-    private User user2;
-    private User user3;
-    private Post post1;
-    private Post post2;
-    private Post post3;
-    private Comment comment1;
-    private Comment comment2;
-    private Comment comment3;
-
+    private UserDto userDto;
     @BeforeEach
-    public void setUp() {
-    	System.out.println("start");
-        Category category = Category.builder()
-                .categoryId(1)
-                .categoryTitle("category1")
-                .categoryDescription("this is category1")
-                .post(Collections.emptyList()).build();
-
-        user1 = User.builder().id(1).name("ram").email("ram@gmail.com").password("ram@123")
-                .about("I am user1").post(Collections.emptyList()).comments(Collections.emptySet()).build();
-        user2 = User.builder().id(1).name("ram").email("ram@gmail.com").password("ram@123")
-                .about("I am user1").post(Collections.emptyList()).comments(Collections.emptySet()).build();
-        user3 = User.builder().id(1).name("ram").email("ram@gmail.com").password("ram@123")
-                .about("I am user1").post(Collections.emptyList()).comments(Collections.emptySet()).build();
-
-        post1 = Post.builder().postId(1)
-                .title("post1").content("this is post 1")
-                .imageName("post1.png").addDate(new Date())
-                .category(category)
-                .user(user1).comments(Collections.emptySet())
+    public void setUp(){
+        userDto = UserDto.builder()
+                .about("About")
+                .email("jane.doe@example.org")
+                .id(1)
+                .name("Name")
+                .password("iloveyou")
                 .build();
-
-        post2 = Post.builder().postId(2)
-                .title("post2").content("this is post 2")
-                .imageName("post2.png").addDate(new Date())
-                .category(category)
-                .user(user2).comments(Collections.emptySet())
-                .build();
-
-        post3 = Post.builder().postId(3)
-                .title("post3").content("this is post 3")
-                .imageName("post3.png").addDate(new Date())
-                .category(category)
-                .user(user3).comments(Collections.emptySet())
-                .build();
-
-        comment1 = Comment.builder().id(1)
-                .content("Dummy Content").post(post1).user(user1).build();
-        comment2 = Comment.builder().id(2)
-                .content("Dummy Content").post(post2).user(user2).build();
-        comment3 = Comment.builder().id(3)
-                .content("Dummy Content").post(post3).user(user3).build();
-
     }
-
     @Test
-    public void testGetAllUsersTest() throws Exception {
-        List<User> users = new ArrayList<>(Arrays.asList(user1, user2, user3));
-        Mockito.when(userRepository.findAll()).thenReturn(users);
+    void testCreateUser() throws Exception {
+        // Arrange
+        when(userService.createUser(Mockito.<UserDto>any())).thenReturn(userDto);
 
-        mockMvc.perform(MockMvcRequestBuilders
-                        .get("/api/users/")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isOk())
-                .andReturn();
-    }
-
-    @Test
-    public void testGetUserById() throws Exception {
-        Mockito.when(userRepository.findById(Mockito.anyInt())).thenReturn(Optional.of(user1));
-
-        mockMvc.perform(MockMvcRequestBuilders
-                        .get("/api/users/123")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isOk());
-
-    }
-
-    @Test
-    public void testCreateUser_success() throws Exception {
-        List<Post> posts = new ArrayList<>(Arrays.asList(post1, post2, post3));
-        Set<Comment> comments = new HashSet<>(Arrays.asList(comment1, comment2, comment3));
-
-        User user = User.builder()
-                .id(1).name("user").email("user@gmail.com")
-                .password("user@123").about("demo user")
-                .post(posts).comments(comments).build();
-
-        Mockito.when(userRepository.save(user)).thenReturn(user);
-
-        String content = objectWriter.writeValueAsString(user);  // it takes object as a input and returns Json
-
-        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
-                .post("/api/users/")
+        UserDto userDto = new UserDto();
+        userDto.setAbout("About");
+        AddressDto addressDto = AddressDto.builder().city("Oxford").id(1).lane1("Lane1").lane2("Lane2").state("MD").build();
+        userDto.setAddressDto(addressDto);
+        userDto.setEmail("jane.doe@example.org");
+        userDto.setId(1);
+        userDto.setName("Name");
+        userDto.setPassword("iloveyou");
+        String content = (new ObjectMapper()).writeValueAsString(userDto);
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.post("/api/users/")
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
                 .content(content);
 
-        mockMvc.perform(mockRequest)
-                .andExpect(status().isCreated())
-                .andReturn();
+        // Act
+        ResultActions actualPerformResult = MockMvcBuilders.standaloneSetup(userController).build().perform(requestBuilder);
+
+        // Assert
+        actualPerformResult.andExpect(MockMvcResultMatchers.status().isCreated())
+                .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
+                .andExpect(MockMvcResultMatchers.content()
+                        .string(
+                                "{\"id\":1,\"name\":\"Name\",\"email\":\"jane.doe@example.org\",\"password\":\"iloveyou\",\"about\":\"About\",\"addressDto"
+                                        + "\":null}"));
     }
 
+    /**
+     * Method under test: {@link UserController#getUser(Integer)}
+     */
     @Test
-    public void testUpdateUser_success() throws Exception {
+    void testGetUser() throws Exception {
+        // Arrange
+        when(userService.getUser(Mockito.<Integer>any())).thenReturn(userDto);
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get("/api/users/{userId}", 1);
 
-        List<Post> posts = new ArrayList<>(Arrays.asList(post1, post2, post3));
-        Set<Comment> comments = new HashSet<>(Arrays.asList(comment1, comment2, comment3));
+        // Act and Assert
+        MockMvcBuilders.standaloneSetup(userController)
+                .build()
+                .perform(requestBuilder)
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
+                .andExpect(MockMvcResultMatchers.content()
+                        .string(
+                                "{\"id\":1,\"name\":\"Name\",\"email\":\"jane.doe@example.org\",\"password\":\"iloveyou\",\"about\":\"About\",\"addressDto"
+                                        + "\":null}"));
+    }
 
-        User updatedRecord = User.builder()
-                .id(1).name("updated name").email("UN@gmail.com")
-                .password("userUpdate@123").about("updated user")
-                .post(posts).comments(comments).build();
+    /**
+     * Method under test: {@link UserController#deleteUser(Integer)}
+     */
+    @Test
+    void testDeleteUser() throws Exception {
+        // Arrange
+        doNothing().when(userService).deleteUser(Mockito.<Integer>any());
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.delete("/api/users/{userId}", 1);
 
-        Mockito.when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
-        Mockito.when(userRepository.save(updatedRecord)).thenReturn(updatedRecord);
+        // Act and Assert
+        MockMvcBuilders.standaloneSetup(userController)
+                .build()
+                .perform(requestBuilder)
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
+                .andExpect(
+                        MockMvcResultMatchers.content().string("{\"message\":\"user deleted Successfully...\",\"success\":true}"));
+    }
 
-        String updatedContent = objectWriter.writeValueAsString(updatedRecord);
+    /**
+     * Method under test: {@link UserController#deleteUser(Integer)}
+     */
+    @Test
+    void testDeleteUser2() throws Exception {
+        // Arrange
+        doNothing().when(userService).deleteUser(Mockito.<Integer>any());
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.delete("/api/users/{userId}", 1);
+        requestBuilder.contentType("https://example.org/example");
 
-        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders
-        		.put("/api/users/123")
+        // Act and Assert
+        MockMvcBuilders.standaloneSetup(userController)
+                .build()
+                .perform(requestBuilder)
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
+                .andExpect(
+                        MockMvcResultMatchers.content().string("{\"message\":\"user deleted Successfully...\",\"success\":true}"));
+    }
+
+    /**
+     * Method under test:
+     * {@link UserController#getAllUsers(Integer, Integer, String, String)}
+     */
+    @Test
+    void testGetAllUsers() throws Exception {
+        // Arrange
+        UserResponse.UserResponseBuilder builderResult = UserResponse.builder();
+        UserResponse buildResult = builderResult.content(new ArrayList<>())
+                .lastPage(true)
+                .pageNo(1)
+                .pageSize(3)
+                .totalElement(1L)
+                .totalPages(1)
+                .build();
+        when(userService.gatAllUser(Mockito.<Integer>any(), Mockito.<Integer>any(), Mockito.<String>any(),
+                Mockito.<String>any())).thenReturn(buildResult);
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get("/api/users/");
+
+        // Act and Assert
+        MockMvcBuilders.standaloneSetup(userController)
+                .build()
+                .perform(requestBuilder)
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
+                .andExpect(MockMvcResultMatchers.content()
+                        .string(
+                                "{\"content\":[],\"pageNo\":1,\"pageSize\":3,\"totalElement\":1,\"totalPages\":1,\"lastPage\":true}"));
+    }
+
+    /**
+     * Method under test: {@link UserController#updateUser(UserDto, Integer)}
+     */
+    @Test
+    void testUpdateUser() throws Exception {
+        // Arrange
+        when(userService.updateUSer(Mockito.<UserDto>any(), Mockito.<Integer>any())).thenReturn(userDto);
+
+        UserDto userDto = new UserDto();
+        userDto.setAbout("About");
+        AddressDto addressDto = AddressDto.builder().city("Oxford").id(1).lane1("Lane1").lane2("Lane2").state("MD").build();
+        userDto.setAddressDto(addressDto);
+        userDto.setEmail("jane.doe@example.org");
+        userDto.setId(1);
+        userDto.setName("Name");
+        userDto.setPassword("iloveyou");
+        String content = (new ObjectMapper()).writeValueAsString(userDto);
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.put("/api/users/{userId}", 1)
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(updatedContent);
+                .content(content);
 
-        mockMvc.perform(mockRequest)
-                .andExpect(status().isOk())
-                .andReturn();
-    }
-
-    @Test
-    public void testDeleteUser_success() throws Exception {
-        Mockito.when(userRepository.findById(user2.getId())).thenReturn(Optional.of(user2));
-
-        mockMvc.perform(MockMvcRequestBuilders
-                        .delete("/api/users/2")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+        // Act and Assert
+        MockMvcBuilders.standaloneSetup(userController)
+                .build()
+                .perform(requestBuilder)
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
+                .andExpect(MockMvcResultMatchers.content()
+                        .string(
+                                "{\"id\":1,\"name\":\"Name\",\"email\":\"jane.doe@example.org\",\"password\":\"iloveyou\",\"about\":\"About\",\"addressDto"
+                                        + "\":null}"));
     }
 }
-
