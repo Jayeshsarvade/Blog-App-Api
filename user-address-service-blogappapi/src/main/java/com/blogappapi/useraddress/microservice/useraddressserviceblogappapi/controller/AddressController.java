@@ -3,14 +3,7 @@ package com.blogappapi.useraddress.microservice.useraddressserviceblogappapi.con
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.blogappapi.useraddress.microservice.useraddressserviceblogappapi.dto.AddressDto;
 import com.blogappapi.useraddress.microservice.useraddressserviceblogappapi.payload.AddressResponse;
@@ -21,44 +14,45 @@ import com.blogappapi.useraddress.microservice.useraddressserviceblogappapi.serv
 import jakarta.validation.Valid;
 
 @RestController
+@RequestMapping("/address")
 public class AddressController {
 
 	@Autowired
 	private AddressService addressService;
 
-	@GetMapping("/address/{userId}")
+	@GetMapping("/{userId}")
 	public ResponseEntity<AddressDto> getAddressByUserId(@PathVariable("userId") int userId) {
 
 		AddressDto addressDto = addressService.findAddressByUserId(userId);
 		return new ResponseEntity<AddressDto>(addressDto, HttpStatus.OK);
 	}
 
-	@GetMapping("/address/api/{id}")
+	@GetMapping("/api/{id}")
 	public ResponseEntity<AddressDto> getAddress(@PathVariable int id) {
 		AddressDto address = addressService.getAddress(id);
 		return new ResponseEntity<AddressDto>(address, HttpStatus.OK);
 	}
 
-	@DeleteMapping("/address/api/{id}")
+	@DeleteMapping("/api/{id}")
 	public ResponseEntity<ApiResponse> deleteAddress(@PathVariable int id) {
 		addressService.deleteAddress(id);
 		return new ResponseEntity<ApiResponse>(new ApiResponse("record deleted", true), HttpStatus.OK);
 	}
 
-	@DeleteMapping("/address/api/userId/{userId}")
+	@DeleteMapping("/api/userId/{userId}")
 	public ResponseEntity<ApiResponse> deleteAddressByUserId(@PathVariable int userId) {
 		addressService.deleteAddressByUserId(userId);
 		return new ResponseEntity<ApiResponse>(new ApiResponse("address deleted with userId: " + userId, true),
 				HttpStatus.OK);
 	}
 
-	@PutMapping("/address/api/{id}")
+	@PutMapping("/api/{id}")
 	public ResponseEntity<AddressDto> updateAddress(@Valid @RequestBody AddressDto addressDto, @PathVariable int id) {
 		AddressDto updateAddress = addressService.updateAddress(addressDto, id);
 		return new ResponseEntity<AddressDto>(updateAddress, HttpStatus.OK);
 	}
 
-	@GetMapping("/address/api/")
+	@GetMapping("/api/")
 	public ResponseEntity<AddressResponse> getAllAddress(
 			@RequestParam(value = "pageNo", defaultValue = AppConstants.PAGE_NO, required = false) int pageNo,
 			@RequestParam(value = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) int pageSize,
@@ -68,7 +62,7 @@ public class AddressController {
 		return new ResponseEntity<AddressResponse>(allAddress, HttpStatus.OK);
 	}
 
-	@PostMapping("/address/api/userId/{userId}")
+	@PostMapping("/api/userId/{userId}")
 	public ResponseEntity<AddressDto> createAddress(@Valid @RequestBody AddressDto addressDto, @PathVariable int userId) {
 		AddressDto address = addressService.createAddress(addressDto, userId);
 		return new ResponseEntity<AddressDto>(address, HttpStatus.CREATED);
