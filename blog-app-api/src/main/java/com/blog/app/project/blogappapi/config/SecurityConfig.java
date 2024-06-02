@@ -23,6 +23,7 @@ public class SecurityConfig {
 
         http.csrf(csrf -> csrf.disable()).cors(cors -> cors.disable())
                 .authorizeHttpRequests(auth -> auth.requestMatchers("/api/users/").authenticated()
+                        .requestMatchers("/api-docs/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/categories/").authenticated()
                         .requestMatchers("/api/").authenticated()
                         .requestMatchers("/auth/login").permitAll().anyRequest().authenticated())
@@ -32,5 +33,4 @@ public class SecurityConfig {
         http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
-
 }
