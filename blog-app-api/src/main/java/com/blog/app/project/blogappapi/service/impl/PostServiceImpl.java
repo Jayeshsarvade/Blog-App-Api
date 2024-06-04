@@ -140,6 +140,13 @@ public class PostServiceImpl implements PostService {
 
 	}
 
+	/**
+	 * Deletes a post from the database.
+	 *
+	 * @param postId The unique identifier of the post to be deleted.
+	 * @throws ResourceNotFoundException If the post with the given postId does not exist in the database.
+	 */
+
 	@Override
 	public void deletePost(Integer postId) {
 		logger.info("deleting post: {}", postId);
@@ -148,6 +155,14 @@ public class PostServiceImpl implements PostService {
 		postRepository.delete(post);
 		logger.info("post deleted successfully...");
 	}
+
+	/**
+	 * Retrieves a post from the database based on the given postId.
+	 *
+	 * @param postId The unique identifier of the post to be retrieved.
+	 * @return The post object with the specified postId.
+	 * @throws ResourceNotFoundException If the post with the given postId does not exist in the database.
+	 */
 
 	@Override
 	public PostDto getPostById(Integer postId) {
@@ -188,6 +203,8 @@ public class PostServiceImpl implements PostService {
 		}
 		return postDto;
 	}
+
+
 
 	@Override
 	public PostResponse getAllPost(Integer pageNo, Integer pageSize, String sortBy, String sortDir) {
@@ -323,6 +340,13 @@ public class PostServiceImpl implements PostService {
 		return postDtoList;
 	}
 
+	/**
+	 * Searches for posts that contain the given keyword in their titles.
+	 *
+	 * @param keyword The keyword to search for in post titles.
+	 * @return A list of PostDto objects that match the search criteria.
+	 */
+
 	@Override
 	public List<PostDto> searchPosts(String keyword) {
 		logger.info("searching posts: {}", keyword);
@@ -363,6 +387,13 @@ public class PostServiceImpl implements PostService {
 		}
 		return postDtoList;
 	}
+
+	/**
+	 * Retrieves a list of users who have commented on a specific post.
+	 *
+	 * @param postId The unique identifier of the post.
+	 * @return A list of UserDto objects representing the users who have commented on the post.
+	 */
 
 	@Override
 	public List<UserDto> getUsersWhoCommented(int postId) {

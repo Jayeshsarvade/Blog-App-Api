@@ -12,17 +12,36 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * This class is a REST controller for handling user-related operations.
+ * It provides endpoints for creating, updating, retrieving, and deleting users.
+ * It also provides an endpoint for retrieving all users with pagination and sorting.
+ */
+
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
+    /**
+     * The UserService instance that provides the business logic for user operations.
+     */
+
     @Autowired
     private UserService userService;
+
+    /**
+     * This method is used to create a new user.
+     *
+     * @param userDto The user data to be created. This data should be validated and sanitized before being passed to this method.
+     * @return A ResponseEntity containing the created user data and a HTTP status code of 201 (Created).
+     * @throws IllegalArgumentException If the userDto is null or invalid.
+     */
 
     @Operation(summary = "Create User")
     @ApiResponses(value = {
@@ -34,6 +53,15 @@ public class UserController {
         return new ResponseEntity<UserDto>(user, HttpStatus.CREATED);
     }
 
+    /**
+     * This method is used to update an existing user by its id.
+     *
+     * @param userDto The user data to be updated. This data should be validated and sanitized before being passed to this method.
+     * @param userId The id of the user to be updated. This id should be a valid integer and not null.
+     * @return A ResponseEntity containing the updated user data and a HTTP status code of 200 (OK).
+     * @throws IllegalArgumentException If the userDto is null or invalid, or if the userId is null or invalid.
+     * @throws ChangeSetPersister.NotFoundException If the user with the given id is not found in the database.
+     */
 
     @Operation(summary = "Update User By Its Id")
     @ApiResponses(value = {
@@ -49,6 +77,15 @@ public class UserController {
         return new ResponseEntity<>(updatedUSer,HttpStatus.OK);
     }
 
+    /**
+     * This method is used to get a user by its id.
+     *
+     * @param userId The id of the user to be retrieved. This id should be a valid integer and not null.
+     * @return A ResponseEntity containing the user data and a HTTP status code of 200 (OK).
+     * @throws IllegalArgumentException If the userId is null or invalid.
+     * @throws ChangeSetPersister.NotFoundException If the user with the given id is not found in the database.
+     */
+
     @Operation(summary = "Get User By Its Id")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Found the User",
@@ -63,6 +100,15 @@ public class UserController {
         return new ResponseEntity<>(getUser,HttpStatus.OK);
     }
 
+    /**
+     * This method is used to delete a user by its id.
+     *
+     * @param userId The id of the user to be deleted. This id should be a valid integer and not null.
+     * @return A ResponseEntity containing an ApiResponse with a success message and a HTTP status code of 200 (OK).
+     * @throws IllegalArgumentException If the userId is null or invalid.
+     * @throws ChangeSetPersister.NotFoundException If the user with the given id is not found in the database.
+     */
+
     @Operation(summary = "Delete User By Its Id")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "User Deleted",
@@ -76,6 +122,17 @@ public class UserController {
         userService.deleteUser(userId);
         return new ResponseEntity<>(new ApiResponse("user deleted Successfully...", true), HttpStatus.OK);
     }
+
+    /**
+     * This method retrieves all users from the database.
+     *
+     * @param pageNo The page number for pagination. Default value is defined in AppConstantsUser.PAGE_NO.
+     * @param pageSize The number of users per page for pagination. Default value is defined in AppConstantsUser.PAGE_SIZE.
+     * @param sortBy The field to sort the users by. Default value is defined in AppConstantsUser.SORT_BY.
+     * @param sortDir The direction to sort the users. Default value is defined in AppConstantsUser.SORT_DIR.
+     * @return A ResponseEntity containing a UserResponse object with the retrieved users and a HTTP status code of 200 (OK).
+     * @throws ChangeSetPersister.NotFoundException If no users are found in the database.
+     */
 
     @Operation(summary = "Get All Users")
     @ApiResponses(value = {

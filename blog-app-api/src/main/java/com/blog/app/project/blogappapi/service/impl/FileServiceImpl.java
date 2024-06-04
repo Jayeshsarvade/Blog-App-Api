@@ -9,8 +9,21 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.UUID;
 
+/**
+ * This class implements the FileService interface and provides methods for file operations.
+ */
 @Service
 public class FileServiceImpl implements FileService {
+
+    /**
+     * This method is responsible for uploading an image file to the specified path.
+     * It generates a random UUID for the file name to avoid overwriting existing files.
+     *
+     * @param path The path where the image file will be stored.
+     * @param file The MultipartFile object containing the image data.
+     * @return The original filename of the uploaded image.
+     * @throws IOException If an error occurs during file operations.
+     */
 
     @Override
     public String uploadImage(String path, MultipartFile file) throws IOException {

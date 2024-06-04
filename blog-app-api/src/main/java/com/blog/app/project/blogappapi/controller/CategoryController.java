@@ -25,6 +25,15 @@ public class CategoryController {
     @Autowired
     private CategoryService categoryService;
 
+    /**
+     * This method is used to create a new category.
+     *
+     * @param categoryDto The category data to be created.
+     * @return A ResponseEntity containing the created category data and a HTTP status code of 201 (Created).
+     *
+     * @throws IllegalArgumentException If the category data is invalid.
+     */
+
     @Operation(summary = "Create Category")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "category created",
@@ -34,6 +43,16 @@ public class CategoryController {
         CategoryDto category = categoryService.createCategory(categoryDto);
         return new ResponseEntity<CategoryDto>(category, HttpStatus.CREATED);
     }
+
+    /**
+     * This method is used to update an existing category by its id.
+     *
+     * @param categoryDto The updated category data.
+     * @param categoryId The id of the category to be updated.
+     * @return A ResponseEntity containing the updated category data and a HTTP status code of 200 (OK).
+     *
+     * @throws IllegalArgumentException If the category data is invalid or the category id is not found.
+     */
 
     @Operation(summary = "Update Category By Its Id")
     @ApiResponses(value = {
@@ -52,6 +71,14 @@ public class CategoryController {
         return new ResponseEntity<CategoryDto>(updateCat,HttpStatus.OK);
     }
 
+    /**
+     * This method is used to delete an existing category by its id.
+     *
+     * @param categoryId The id of the category to be deleted.
+     * @return A ResponseEntity containing an ApiResponse with a success message and a HTTP status code of 200 (OK).
+     *
+     * @throws IllegalArgumentException If the category id is not found.
+     */
 
     @Operation(summary = "Delete Category By Its Id")
     @ApiResponses(value = {
@@ -67,6 +94,17 @@ public class CategoryController {
         return new ResponseEntity<ApiResponse>(new ApiResponse("category is deleted",true),HttpStatus.OK);
     }
 
+    /**
+     * This method is used to retrieve a category by its id.
+     *
+     * @param categoryId The id of the category to be retrieved.
+     * @return A ResponseEntity containing the requested category data and a HTTP status code of 200 (OK).
+     *         If the category id is not found, a ResponseEntity with a HTTP status code of 404 (Not Found) is returned.
+     *         If the category id is invalid, a ResponseEntity with a HTTP status code of 400 (Bad Request) is returned.
+     *
+     * @throws IllegalArgumentException If the category id is not found or invalid.
+     */
+
     @Operation(summary = "Get Category By Its Id")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Found the category",
@@ -80,6 +118,20 @@ public class CategoryController {
         CategoryDto category = categoryService.getCategory(categoryId);
         return new ResponseEntity<CategoryDto>(category,HttpStatus.OK);
     }
+
+    /**
+     * This method retrieves all categories from the database.
+     * It supports pagination, sorting, and filtering.
+     *
+     * @param pageNo The page number to retrieve. Default is 0.
+     * @param pageSize The number of categories to retrieve per page. Default is 10.
+     * @param sortBy The field to sort the categories by. Default is 'id'.
+     * @param sortDir The direction to sort the categories. Default is 'asc'.
+     * @return A ResponseEntity containing a CategoryResponse object with the retrieved categories and pagination information.
+     *         If no categories are found, a ResponseEntity with a HTTP status code of 404 (Not Found) is returned.
+     *
+     * @throws IllegalArgumentException If the page number, page size, sort field, or sort direction is invalid.
+     */
 
     @Operation(summary = "Get All Categories")
     @ApiResponses(value = {

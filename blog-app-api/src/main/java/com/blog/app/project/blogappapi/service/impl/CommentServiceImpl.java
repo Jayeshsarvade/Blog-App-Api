@@ -40,6 +40,16 @@ public class CommentServiceImpl implements CommentService {
 	@Autowired
 	private UserRepository userRepository;
 
+	/**
+	 * This method is used to create a new comment in the system.
+	 *
+	 * @param commentDto The comment data transfer object containing the content of the comment.
+	 * @param userId The id of the user who is creating the comment.
+	 * @param postId The id of the post to which the comment is being added.
+	 * @return The created comment data transfer object with the id of the newly created comment.
+	 * @throws ResourceNotFoundException If the user or post with the given ids does not exist.
+	 */
+
 	@Override
 	public CommentDto createComment(CommentDto commentDto, Integer userId, Integer postId) {
 		logger.info("creating comment: {} {} {}", commentDto, userId, postId);
@@ -58,6 +68,13 @@ public class CommentServiceImpl implements CommentService {
 		return commentDto = CommentDto.builder().id(comment.getId()).content(comment.getContent()).build();
 	}
 
+	/**
+	 * This method is used to delete a comment from the system.
+	 *
+	 * @param commentId The id of the comment to be deleted.
+	 * @throws ResourceNotFoundException If a comment with the given id does not exist.
+	 */
+
 	@Override
 	public void deleteComment(Integer commentId) {
 		logger.info("deleting comment: {}", commentId);
@@ -66,6 +83,14 @@ public class CommentServiceImpl implements CommentService {
 		logger.info("comment deleted: {}", comment);
 		commentRepository.delete(comment);
 	}
+
+	/**
+	 * This method retrieves a comment from the system based on the provided commentId.
+	 *
+	 * @param commentId The unique identifier of the comment to be retrieved.
+	 * @return A CommentDto object containing the details of the retrieved comment.
+	 * @throws ResourceNotFoundException If a comment with the given commentId does not exist.
+	 */
 
 	@Override
 	public CommentDto getComment(Integer commentId) {
@@ -76,6 +101,16 @@ public class CommentServiceImpl implements CommentService {
 		logger.debug("got comment: {}", comment);
 		return commentDto = CommentDto.builder().id(comment.getId()).content(comment.getContent()).build();
 	}
+
+	/**
+	 * This method retrieves all comments from the system with pagination, sorting, and filtering.
+	 *
+	 * @param pageNo The page number to retrieve.
+	 * @param pageSize The number of comments to retrieve per page.
+	 * @param sortBy The field to sort the comments by.
+	 * @param sortDir The direction to sort the comments (asc or desc).
+	 * @return A CommentResponse object containing the details of the retrieved comments.
+	 */
 
 	@Override
 	public CommentResponse getAllComment(Integer pageNo, Integer pageSize, String sortBy, String sortDir) {
@@ -101,6 +136,15 @@ public class CommentServiceImpl implements CommentService {
 		logger.debug("getting all comments: {}", commentResponse);
 		return commentResponse;
 	}
+
+	/**
+	 * This method is used to update an existing comment in the system.
+	 *
+	 * @param commentId The unique identifier of the comment to be updated.
+	 * @param commentDto The comment data transfer object containing the updated content of the comment.
+	 * @return A CommentDto object containing the details of the updated comment.
+	 * @throws ResourceNotFoundException If a comment with the given commentId does not exist.
+	 */
 
 	@Override
 	public CommentDto updateComment(int commentId, CommentDto commentDto) {

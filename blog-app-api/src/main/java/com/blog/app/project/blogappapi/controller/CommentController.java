@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,18 @@ public class CommentController {
 
     @Autowired
     CommentService commentService;
+
+    /**
+     * This method is used to create a new comment for a specific post.
+     *
+     * @param commentDto The comment data to be created.
+     * @param userId The id of the user who is creating the comment.
+     * @param postId The id of the post to which the comment is being added.
+     * @return A ResponseEntity containing the created comment and a HTTP status code of 201 (Created).
+     *
+     * @throws IllegalArgumentException If the user id or post id is invalid.
+     * @throws ChangeSetPersister.NotFoundException If the user id or post id is not found.
+     */
 
     @Operation(summary = "Create Comment")
     @ApiResponses(value = {
@@ -44,6 +57,16 @@ public class CommentController {
         return new ResponseEntity<CommentDto>(comment, HttpStatus.CREATED);
     }
 
+    /**
+     * This method is used to delete a comment by its id.
+     *
+     * @param commentId The id of the comment to be deleted.
+     * @return A ResponseEntity containing an ApiResponse with a success message and a HTTP status code of 200 (OK).
+     *
+     * @throws IllegalArgumentException If the comment id is invalid.
+     * @throws ChangeSetPersister.NotFoundException If the comment id is not found.
+     */
+
     @Operation(summary = "Delete Comment By Its Id")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Comment deleted successfully",
@@ -60,6 +83,16 @@ public class CommentController {
         return  new ResponseEntity<ApiResponse>(new ApiResponse("comment deleted Successfully...", true), HttpStatus.OK);
     }
 
+    /**
+     * This method is used to retrieve a comment by its id.
+     *
+     * @param commentId The id of the comment to be retrieved.
+     * @return A ResponseEntity containing the requested comment and a HTTP status code of 200 (OK).
+     *
+     * @throws IllegalArgumentException If the comment id is invalid.
+     * @throws ChangeSetPersister.NotFoundException If the comment id is not found.
+     */
+
     @Operation(summary = "Get Comment By Its Id")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Found the comment",
@@ -73,6 +106,18 @@ public class CommentController {
         CommentDto comment = commentService.getComment(commentId);
         return new ResponseEntity<CommentDto>(comment, HttpStatus.OK);
     }
+
+    /**
+     * This method retrieves all comments from the database.
+     * It supports pagination, sorting, and filtering.
+     *
+     * @param pageNo The page number to retrieve. Default is 0.
+     * @param pageSize The number of comments per page. Default is 10.
+     * @param sortBy The field to sort the comments by. Default is 'id'.
+     * @param sortDir The direction of sorting. Default is 'asc'.
+     * @return A ResponseEntity containing a CommentResponse object with the retrieved comments and pagination information.
+     *         HTTP status code is 200 (OK) if comments are found, 404 (Not Found) if no comments are found.
+     */
 
     @Operation(summary = "Get All Comments")
     @ApiResponses(value = {
@@ -90,7 +135,16 @@ public class CommentController {
         return new ResponseEntity<CommentResponse>(allComment, HttpStatus.OK);
     }
 
-    
+    /**
+     * This method is used to update a comment by its id.
+     *
+     * @param id The id of the comment to be updated.
+     * @param commentDto The updated comment data.
+     * @return A ResponseEntity containing the updated comment and a HTTP status code of 200 (OK).
+     *
+     * @throws IllegalArgumentException If the comment id is invalid.
+     * @throws ChangeSetPersister.NotFoundException If the comment id is not found.
+     */
 
     @Operation(summary = "update comments by its Id")
     @ApiResponses(value = {

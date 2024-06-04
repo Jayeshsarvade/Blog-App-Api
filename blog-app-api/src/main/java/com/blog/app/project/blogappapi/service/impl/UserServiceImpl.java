@@ -38,23 +38,37 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private AddressClient addressClient;
-	
-	
+
+	/**
+	 * This method creates a new user in the system.
+	 *
+	 * @param userdto The DTO object containing the details of the user to be created.
+	 * @return A UserDto object containing the details of the newly created user.
+	 * @throws IllegalArgumentException If the userDto object is null or any of its required fields are missing.
+	 */
 
 	@Override
 	public UserDto createUser(UserDto userdto) {
 		logger.info("Creating user: {}", userdto);
-//		User user = dtoToEntity(userdto);
-		User user = new User();
-		user = User.builder().id(userdto.getId()).name(userdto.getName())
+		User user = User.builder().id(userdto.getId()).name(userdto.getName())
 				.email(userdto.getEmail()).password(userdto.getPassword())
 				.about(userdto.getAbout()).build();
 		User saveUser = userRepository.save(user);
 		logger.info("User created successfully: {}", saveUser);
 		return UserDto.builder().id(user.getId()).name(user.getName())
 				.email(user.getEmail()).password(user.getPassword())
-				.about(user.getAbout()).build();	
+				.about(user.getAbout()).build();
 	}
+
+	/**
+	 * This method updates a user in the system.
+	 *
+	 * @param userDto The DTO object containing the updated details of the user.
+	 * @param userId The unique identifier of the user to be updated.
+	 * @return A UserDto object containing the updated details of the user.
+	 * @throws FeignException If an error occurs while deleting the address associated with the user.
+	 * @throws ResourceNotFoundException If the user with the given userId is not found.
+	 */
 
 	@Override
 	public UserDto updateUSer(UserDto userDto, Integer userId) {
@@ -82,6 +96,15 @@ public class UserServiceImpl implements UserService {
 		return userDto2;
 	}
 
+	/**
+	 * This method retrieves a user by their unique identifier.
+	 *
+	 * @param userId The unique identifier of the user to be fetched.
+	 * @return A UserDto object containing the details of the fetched user.
+	 * @throws FeignException If an error occurs while deleting the address associated with the user.
+	 * @throws ResourceNotFoundException If the user with the given userId is not found.
+	 */
+
 	@Override
 	public UserDto getUser(Integer userId) {
 		logger.info("Fetching user with Id: {}", userId);
@@ -102,6 +125,16 @@ public class UserServiceImpl implements UserService {
 		return userDto;
 	}
 
+
+	/**
+	 * This method retrieves all users from the system with pagination, sorting, and filtering.
+	 *
+	 * @param pageNo The page number to retrieve.
+	 * @param pageSize The number of users to retrieve per page.
+	 * @param sortBy The field to sort the users by.
+	 * @param sortDir The direction to sort the users (asc or desc).
+	 * @return A UserResponse object containing the details of the retrieved users.
+	 */
 	@Override
 	public UserResponse gatAllUser(Integer pageNo, Integer pageSize, String sortBy, String sortDir) {
 		logger.info("Fetching all users with pageNo: {}, pageSize: {}, sortBy: {}, sortDir: {}", pageNo, pageSize,
@@ -137,6 +170,15 @@ public class UserServiceImpl implements UserService {
 		logger.info("Returning user response: {}", userResponse.toString());
 		return userResponse;
 	}
+
+
+	/**
+	 * This method deletes a user in the system.
+	 *
+	 * @param userId The unique identifier of the user to be deleted.
+	 * @throws ResourceNotFoundException If the user with the given userId is not found.
+	 * @throws FeignException If an error occurs while deleting the address associated with the user.
+	 */
 
 	@Override
 	@Transactional
